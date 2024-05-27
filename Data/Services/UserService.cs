@@ -10,40 +10,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Data.Services;
-public class UserService
+public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, DataContext context)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly DataContext _context;
-
-    public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, DataContext context)
-    {
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _context = context;
-       
-    }
-
-    //public async Task<List<ApplicationUser>> GetAllUsersAsync()
-    //{
-    //    try
-    //    {
-    //        var users = await _userManager.Users.ToListAsync();
-    //        if (users != null)
-    //        {
-    //            foreach (var user in users)
-    //            {
-    //                 = await GetRolesAsync(user.Id);
-    //            }
-    //            return users;
-    //        }
-    //        return null!;
-    //    }
-    //    catch (Exception)
-    //    {
-    //        return null!;
-    //    }
-    //}
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+    private readonly DataContext _context = context;
 
     public async Task<ApplicationUser> GetUserByIdAsync(string userId)
     {
@@ -88,25 +59,6 @@ public class UserService
         return IdentityResult.Failed(new IdentityError { Description = "User or role not found" });
     }
 
-    public async Task<IList<string>> GetRolesAsync(string userId)
-    {
-        var rolesList = new List<UserRoles>();
-        var user = await _userManager.FindByIdAsync(userId);
-        var roles = await _userManager.GetRolesAsync(user);
-        //foreach (var roleName in roles)
-        //{
-        //    var role = await _roleManager.FindByNameAsync(roleName);
-        //    if (role != null)
-        //    {
-        //        rolesList.Add(new UserRoles
-        //        {
-        //            RoleName = role.Name,
-        //            RoleId = role.Id
-        //        });
-        //    }
-        //}
-        return roles;
-    }
 
     public async Task<List<UsersWithRolesDisplay>> GetAllUsersWithRolesAsync(List<ApplicationUser> users)
     {
@@ -129,6 +81,7 @@ public class UserService
                     FirstName = user.UserProfile?.FirstName ?? string.Empty,
                     LastName = user.UserProfile?.LastName ?? string.Empty,
                     Email = user.Email,
+                    Id = user.Id,
                     Roles = roles.Any() ? roles : null
                 };
 
@@ -145,13 +98,9 @@ public class UserService
 }
 public class UsersWithRolesDisplay
 {
+    public string Id { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public List<string>? Roles { get; set; }
-}
-public class UserRoles
-{
-    public string RoleName { get; set; } = null!;
-    public string RoleId { get; set; } = null!;
 }

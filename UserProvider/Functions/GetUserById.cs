@@ -12,22 +12,23 @@ public class GetUserById(ILogger<GetUserById> logger, DataContext context)
     private readonly ILogger<GetUserById> _logger = logger;
     private readonly DataContext _context = context;
 
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    [Function("GetUserById")]
+    public async Task <IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
-        try
-        {
-            var userId = req.Query["userId"];
+        var id = req.Query["id"].ToString();
 
-            var user = await _context.Users
-                  .Include(u => u.UserProfile)
-                  .Include(u => u.UserAddress)
-                  .FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _context.Users
+            .Include(u => u.UserProfile)
+            .Include(u => u.UserAddress)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user != null)
+        {
             return new OkObjectResult(user);
         }
-        catch (Exception ex)
+        else
         {
-            _logger.LogError(ex, "Error getting user by id");
-            return new BadRequestObjectResult("Error getting user by id");
+            return new NotFoundObjectResult("User not found");
         }
     }
 }
