@@ -1,64 +1,13 @@
 ﻿using Data.Contexts;
 using Data.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+
 
 namespace Data.Services;
-public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, DataContext context)
+public class UserService(DataContext context)
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly DataContext _context = context;
-
-    public async Task<ApplicationUser> GetUserByIdAsync(string userId)
-    {
-        try
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            return user;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    public async Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password)
-    {
-        return await _userManager.CreateAsync(user, password);
-    }
-
-    public async Task<IdentityResult> UpdateUserAsync(ApplicationUser user)
-    {
-        return await _userManager.UpdateAsync(user);
-    }
-
-    public async Task<IdentityResult> DeleteUserAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user != null)
-        {
-            return await _userManager.DeleteAsync(user);
-        }
-        return IdentityResult.Failed(new IdentityError { Description = "User not found" });
-    }
-
-    public async Task<IdentityResult> AddUserToRoleAsync(string userId, string role)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user != null && await _roleManager.RoleExistsAsync(role))
-        {
-            return await _userManager.AddToRoleAsync(user, role);
-        }
-        return IdentityResult.Failed(new IdentityError { Description = "User or role not found" });
-    }
-
 
     public async Task<List<UsersWithRolesDisplay>> GetAllUsersWithRolesAsync(List<ApplicationUser> users)
     {

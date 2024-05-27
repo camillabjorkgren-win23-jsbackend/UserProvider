@@ -22,11 +22,6 @@ var host = new HostBuilder()
             options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString"));
         });
 
-        //services.AddPooledDbContextFactory<DataContext>(x =>
-        //{
-        //    x.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString")).UseRootApplicationServiceProvider();
-        //});
-
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
@@ -53,11 +48,7 @@ var host = new HostBuilder()
     })
 
 .Build();
-//var sp = services.BuildServiceProvider();
-//using var scope = sp.CreateScope();
-//var dbcontextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DataContext>>();
-//using var context = dbcontextFactory.CreateDbContext();
-//context.Database.EnsureCreated();
+
 
 
 using (var scope = host.Services.CreateScope())

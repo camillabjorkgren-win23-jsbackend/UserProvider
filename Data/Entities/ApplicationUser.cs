@@ -18,7 +18,7 @@ public class ApplicationUser : IdentityUser
 
 public class UserAddress
 {
-    public string Id { get; set; }
+    public string Id { get; set; } 
     public string AddressType { get; set; } = null!;
     public string AddressLine_1 { get; set; } = null!;
     public string? AddressLine_2 { get; set; }
