@@ -1,0 +1,96 @@
+using Data.Contexts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
+
+namespace UserProvider.Functions;
+
+public class UpdateUserNotifications(ILogger<UpdateUserNotifications> logger, DataContext context, HttpClient httpClient)
+{
+    private readonly ILogger<UpdateUserNotifications> _logger = logger;
+    private readonly DataContext _context = context;
+    private readonly HttpClient _httpClient = httpClient;
+
+    [Function("UpdateUserNotifications")]
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    {
+        try
+        {
+            var notificationModel = req.ReadFromJsonAsync<NotificationsFormModel>().Result;
+            if (notificationModel == null)
+            {
+                return new BadRequestObjectResult("Invalid request");
+            }
+            else
+            {
+                var user = _context.Users.Find(notificationModel.UserId);
+                if (user != null)
+                {
+                    user.PreferredEmail = notificationModel.Email;
+                    user.SubscribeNewsletter = notificationModel.SubscribeNewsletter;
+                    user.DarkMode = notificationModel.DarkMode;
+                    await _context.SaveChangesAsync();
+                    //Subscribe to newsletter
+                    if (user.SubscribeNewsletter)
+                    {
+                        SubscribeToNewsletter subscribeToNewsletter = new SubscribeToNewsletter
+                        {
+                            UserEmail = user.Email,
+                            PreferredEmail = user.PreferredEmail,
+                            AdvertisingUpdates = true,
+                            WeekInReview = true,
+                            Podcasts = true,
+                            StartupsWeekly = true,
+                            DailyNewsletter = true,
+                            EventUpdates = true,
+                        };
+                        var subscribeResponse = await _httpClient.PostAsJsonAsync("http://localhost:7299/api/Subscribe", subscribeToNewsletter);
+                        if (subscribeResponse.IsSuccessStatusCode)
+                        {
+                                return new OkObjectResult(user);
+                            
+                        }
+
+                    }
+
+                }
+      
+            }
+           
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user notifications");
+            return new BadRequestResult();
+        }
+        return new BadRequestResult();
+    }
+
+}
+public class SubscribeToNewsletter
+{
+    public string UserEmail { get; set; } = null!;
+    public string PreferredEmail { get; set; } = null!;
+    public bool AdvertisingUpdates { get; set; } = false;
+    public bool WeekInReview { get; set; } = false;
+    public bool Podcasts { get; set; } = false;
+    public bool StartupsWeekly { get; set; } = false;
+    public bool DailyNewsletter { get; set; } = false;
+    public bool EventUpdates { get; set; } = false;
+}   
+
+public class UpdatePreferredEmail
+{
+    public string OldEmail { get; set; } = null!;
+    public string PreferredEmail { get; set; } = null!;
+}
+public class NotificationsFormModel
+{
+    public string Email { get; set; } = null!;
+    public bool SubscribeNewsletter { get; set; }
+
+    public bool DarkMode { get; set; }
+    public string UserId { get; set; } = null!;
+}

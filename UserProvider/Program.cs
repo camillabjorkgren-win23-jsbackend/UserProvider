@@ -16,7 +16,7 @@ var host = new HostBuilder()
         services.AddScoped<UserService>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-
+        services.AddHttpClient();
         services.AddDbContext<DataContext>(options =>
         {
             options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString"));
