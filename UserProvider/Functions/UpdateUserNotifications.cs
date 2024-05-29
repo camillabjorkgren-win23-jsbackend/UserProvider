@@ -32,7 +32,6 @@ public class UpdateUserNotifications(ILogger<UpdateUserNotifications> logger, Da
                     user.SubscribeNewsletter = notificationModel.SubscribeNewsletter;
                     user.DarkMode = notificationModel.DarkMode;
                     await _context.SaveChangesAsync();
-                    //Subscribe to newsletter
                     if (user.SubscribeNewsletter)
                     {
                         SubscribeToNewsletter subscribeToNewsletter = new SubscribeToNewsletter
@@ -54,6 +53,22 @@ public class UpdateUserNotifications(ILogger<UpdateUserNotifications> logger, Da
                         }
 
                     }
+                    else if (!user.SubscribeNewsletter)
+                    {
+                        var subscriber = new Subscriber
+                        {
+                            Email = user.Email
+                        };
+                        var unsubscribeResponse = await _httpClient.PostAsJsonAsync("http://localhost:7299/api/DeleteSubscriber", subscriber);
+                        if (unsubscribeResponse.IsSuccessStatusCode)
+                        {
+                            return new OkObjectResult(user);
+                        }
+                        else
+                        {
+                            return new BadRequestResult();
+                        }
+                    }
 
                 }
       
@@ -69,6 +84,10 @@ public class UpdateUserNotifications(ILogger<UpdateUserNotifications> logger, Da
     }
 
 }
+public class Subscriber
+{
+    public string Email { get; set; } = null!;
+}
 public class SubscribeToNewsletter
 {
     public string UserEmail { get; set; } = null!;
@@ -80,12 +99,6 @@ public class SubscribeToNewsletter
     public bool DailyNewsletter { get; set; } = false;
     public bool EventUpdates { get; set; } = false;
 }   
-
-public class UpdatePreferredEmail
-{
-    public string OldEmail { get; set; } = null!;
-    public string PreferredEmail { get; set; } = null!;
-}
 public class NotificationsFormModel
 {
     public string Email { get; set; } = null!;
