@@ -1,7 +1,6 @@
 using Data.Contexts;
 using Data.Entities;
 using Data.Services;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Functions.Worker;
