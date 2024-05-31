@@ -25,7 +25,6 @@ public class UpdateProfileImage(ILogger<UpdateProfileImage> logger, DataContext 
 
             if (user != null)
             {
-                // Kontrollera om UserProfile är null och skapa en ny instans om så är fallet
                 if (user.UserProfile == null)
                 {
                     user.UserProfile = new UserProfile();
