@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy dotnet core app to Azure Function App - userprovider-silicon-camilla
+name: Build and deploy dotnet core app to Azure Function App - user-provider
 
 on:
   push:
@@ -16,6 +16,10 @@ env:
 jobs:
   build-and-deploy:
     runs-on: windows-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
@@ -31,12 +35,19 @@ jobs:
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
           popd
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_74284F23C1BD476D8607DBE38185A4BA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FEE4B08FE81949F6A5E7C97E15838205 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3504B9DB1A5F48EBA1DDE5A553E8ACB3 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'userprovider-silicon-camilla'
+          app-name: 'user-provider'
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7E4A464D07694715B2792D0A21B63FFC }}
+          
